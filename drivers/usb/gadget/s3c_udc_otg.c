@@ -442,7 +442,7 @@ int s3c_vbus_enable(struct usb_gadget *gadget, int enable)
   dev_info(&gadget->dev, "USB udc %d,%d lock\n", dev->udc_enabled, enable);
   //wake_lock(&dev->udc_wake_lock);
   //s5pv210_lock_dvfs_high_level(DVFS_LOCK_TOKEN_8, L1); //200Mhz lock
-  	s5pv210_lock_dvfs_high_level(DVFS_LOCK_TOKEN_8,L1); //800MHz lock
+  	s5pv210_lock_dvfs_high_level(DVFS_LOCK_TOKEN_8,L5); //800MHz lock
  } else {
   dev_info(&gadget->dev, "USB udc %d,%d unlock\n", dev->udc_enabled, enable);
   //wake_unlock(&dev->udc_wake_lock);
@@ -452,7 +452,7 @@ int s3c_vbus_enable(struct usb_gadget *gadget, int enable)
  if (enable) {
   dev_info(&gadget->dev, "USB udc %d,%d lock\n", dev->udc_enabled, enable);
   //wake_lock(&dev->udc_wake_lock);
-  s5pv210_lock_dvfs_high_level(DVFS_LOCK_TOKEN_8, L3); //200Mhz lock
+  s5pv210_lock_dvfs_high_level(DVFS_LOCK_TOKEN_8, L5); //200Mhz lock
  } else {
   dev_info(&gadget->dev, "USB udc %d,%d unlock\n", dev->udc_enabled, enable);
   //wake_unlock(&dev->udc_wake_lock);
