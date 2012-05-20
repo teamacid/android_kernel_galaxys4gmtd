@@ -20,6 +20,10 @@
 #include <plat/map-base.h>
 #include <mach/regs-clock.h>
 #include "wm8994_samsung.h"
+#ifdef CONFIG_SND_VOODOO
+#include "wm8994_voodoo.h"
+#endif
+
 
 // DAC
 #define TUNING_DAC1L_VOL		0xC0		// 610h
@@ -1560,6 +1564,16 @@ if(wm8994->mic_mute ==MUTE_ON)
 
 }
 
+#ifdef CONFIG_SND_VOODOO_RECORD_PRESETS
+int wm8994_voodoo_ignore_recording(struct snd_soc_codec *codec)
+{
+		struct wm8994_priv *wm8994 = codec->drvdata;
+	return wm8994->ganlite_active == wificall_on ||
+	  wm8994->input_source == VOIP_INPUT ||
+	  wm8994->input_source == RECOGNITION;
+}
+#endif
+
 void wm8994_record_main_mic(struct snd_soc_codec *codec)
 {
 	struct wm8994_priv *wm8994 = codec->drvdata;
@@ -1654,6 +1668,10 @@ void wm8994_record_main_mic(struct snd_soc_codec *codec)
 	val &= ~(WM8994_AIF1ADCL_SRC_MASK | WM8994_AIF1ADCR_SRC_MASK);
 	val |= (WM8994_AIF1ADCR_SRC);
 	wm8994_write(codec, WM8994_AIF1_CONTROL_1, val);
+
+#ifdef CONFIG_SND_VOODOO_RECORD_PRESETS
+	voodoo_hook_record_main_mic();
+#endif
 
 	val = wm8994_read(codec, WM8994_POWER_MANAGEMENT_4);
 	val &= ~(WM8994_ADCL_ENA_MASK | WM8994_AIF1ADC1L_ENA_MASK);
@@ -4604,4 +4622,6 @@ void wm8994_set_voicecall_hac(struct snd_soc_codec *codec)
 
 	wm8994_write(codec, WM8994_AIF1_DAC1_FILTERS_1, 0x0000);
 	wm8994_write(codec, WM8994_AIF2_DAC_FILTERS_1, 0x0000);
+\No newline at end of file
 }
+

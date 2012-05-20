@@ -1790,7 +1790,8 @@ static int wm8994_pcm_probe(struct platform_device *pdev)
 #else
                 /* Add other interfaces here */
 #endif
-        return ret;
+        
+		return ret;
 }
 
 /* power down chip */
