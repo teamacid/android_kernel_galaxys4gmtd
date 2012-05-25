@@ -1419,8 +1419,7 @@ void wm8994_record_main_mic(struct snd_soc_codec *codec)
 			wm8994_set_codec_gain(codec, RECORDING_MODE,
 					RECORDING_VOIP_MAIN);
 		else
-			wm8994_set_codec_gain(codec, RECORDING_MODE, RECORDING_MAIN);
-			
+			wm8994_set_codec_gain(codec, RECORDING_MODE, RECORDING_MAIN);	
 	} else {
 		val = wm8994_read(codec, WM8994_AIF1_MASTER_SLAVE);
 		val |= (WM8994_AIF1_MSTR | WM8994_AIF1_CLK_FRC | WM8994_AIF1_LRCLK_FRC);

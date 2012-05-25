@@ -74,18 +74,11 @@ unsigned short origin_recgain;
 unsigned short origin_recgain_mixer;
 #endif
 
-#ifdef NEXUS_S
-bool speaker_tuning = false;
-#endif
-
 // global active or kill switch
 bool enable = false;
 
 bool dac_osr128 = true;
 bool adc_osr128 = false;
-#ifndef GALAXY_TAB_TEGRA
-bool fll_tuning = true;
-#endif
 bool dac_direct = true;
 bool mono_downmix = false;
 
@@ -472,12 +465,6 @@ bool is_path(int unified_path)
 	switch (unified_path) {
 	// speaker
 	case SPEAKER:
-#ifdef GALAXY_TAB
-		return (wm8994->cur_path == SPK
-			|| wm8994->cur_path == RING_SPK
-			|| wm8994->fmradio_path == FMR_SPK
-			|| wm8994->fmradio_path == FMR_SPK_MIX);
-#else
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 		return (wm8994->cur_path == SPK
 			|| wm8994->cur_path == SPK_HP);
@@ -485,37 +472,18 @@ bool is_path(int unified_path)
 		return (wm8994->cur_path == SPK
 			|| wm8994->cur_path == RING_SPK);
 #endif
-#endif
 
 	// headphones
 	case HEADPHONES:
 
-#ifdef NEXUS_S
-		return (wm8994->cur_path == HP
-			|| wm8994->cur_path == HP_NO_MIC);
-#else
-#ifdef GALAXY_TAB
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
-		return (wm8994->cur_path == HP
-			|| wm8994->cur_path == HP_NO_MIC);
-#else
-		return (wm8994->cur_path == HP3P
-			|| wm8994->cur_path == HP4P
-			|| wm8994->fmradio_path == FMR_HP);
-#endif
-#else
-#ifdef M110S
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 		return (wm8994->cur_path == HP
 			|| wm8994->cur_path == HP_NO_MIC);
 #else
 		return (wm8994->cur_path == HP);
 #endif
-#else
-#ifdef GALAXY_TAB_TEGRA
-		return (wm8994->cur_path == HP
-			|| wm8994->cur_path == HP_NO_MIC);
-#else
+#endif
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 		return (wm8994->cur_path == HP
 			|| wm8994->cur_path == HP_NO_MIC
@@ -525,41 +493,8 @@ bool is_path(int unified_path)
 			|| wm8994->fmradio_path == FMR_HP);
 #endif
 #endif
-#endif
-#endif
-#endif
 
-	// FM Radio on headphones
-	case RADIO_HEADPHONES:
-#ifdef NEXUS_S
-		return false;
-#else
-#ifdef M110S
-		return false;
-#else
-#ifdef GALAXY_TAB_TEGRA
-		return false;
-#else
-#ifdef GALAXY_TAB
-		return false;
-#else
-		return (wm8994->codec_state & FMRADIO_ACTIVE)
-		    && (wm8994->fmradio_path == FMR_HP);
-#endif
-#endif
-#endif
-#endif
 
-	// Standard recording presets
-	// for M110S Gingerbread: added check non call
-	case MAIN_MICROPHONE:
-		return (wm8994->codec_state & CAPTURE_ACTIVE)
-		    && (wm8994->rec_path == MAIN)
-		    && !(wm8994->codec_state & CALL_ACTIVE);
-
-	}
-	return false;
-}
 
 bool is_path_media_or_fm_no_call_no_record()
 {
@@ -577,69 +512,6 @@ bool is_path_media_or_fm_no_call_no_record()
 	return false;
 }
 
-#ifdef NEXUS_S
-void update_speaker_tuning(bool with_mute)
-{
-	DECLARE_WM8994(codec);
-
-	if (!(is_path(SPEAKER) || (wm8994->codec_state & CALL_ACTIVE)))
-		return;
-
-	if (speaker_tuning) {
-		// DRC settings
-		wm8994_write(codec, WM8994_AIF1_DRC1_3, 0x0010);
-		wm8994_write(codec, WM8994_AIF1_DRC1_4, 0x00EB);
-
-		// hardware EQ
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_GAINS_1,   0x041D);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_GAINS_2,   0x4C00);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_1_A,  0x0FE3);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_1_B,  0x0403);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_1_PG, 0x0074);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_A,  0x1F03);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_B,  0xF0F9);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_C,  0x040A);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_PG, 0x03DA);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_A,  0x1ED2);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_B,  0xF11A);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_C,  0x040A);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_PG, 0x045D);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_4_A,  0x0E76);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_4_B,  0xFCE4);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_4_C,  0x040A);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_4_PG, 0x330D);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_5_A,  0xFC8F);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_5_B,  0x0400);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_5_PG, 0x323C);
-
-		// Speaker Boost tuning
-		wm8994_write(codec, WM8994_CLASSD,                 0x0170);
-	} else {
-		// DRC settings
-		wm8994_write(codec, WM8994_AIF1_DRC1_3, 0x0028);
-		wm8994_write(codec, WM8994_AIF1_DRC1_4, 0x0186);
-
-		// hardware EQ
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_GAINS_1,   0x0019);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_GAINS_2,   0x6280);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_1_A,  0x0FC3);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_1_B,  0x03FD);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_1_PG, 0x00F4);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_A,  0x1F30);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_B,  0xF0CD);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_C,  0x040A);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_2_PG, 0x032C);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_A,  0x1C52);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_B,  0xF379);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_C,  0x040A);
-		wm8994_write(codec, WM8994_AIF1_DAC1_EQ_BAND_3_PG, 0x0DC1);
-		wm8994_write(codec, WM8994_CLASSD,                 0x0170);
-
-		// Speaker Boost tuning
-		wm8994_write(codec, WM8994_CLASSD,                 0x0168);
-	}
-}
-#endif
 
 unsigned short osr128_get_value(unsigned short val)
 {
@@ -668,26 +540,6 @@ void update_osr128(bool with_mute)
 	wm8994_write(codec, WM8994_OVERSAMPLING, val);
 	bypass_write_hook = false;
 }
-
-#ifndef GALAXY_TAB_TEGRA
-unsigned short fll_tuning_get_value(unsigned short val)
-{
-	val = (val >> WM8994_FLL1_GAIN_WIDTH << WM8994_FLL1_GAIN_WIDTH);
-	if (fll_tuning == 1)
-		val |= 5;
-
-	return val;
-}
-
-void update_fll_tuning(bool with_mute)
-{
-	unsigned short val;
-	val = fll_tuning_get_value(wm8994_read(codec, WM8994_FLL1_CONTROL_4));
-	bypass_write_hook = true;
-	wm8994_write(codec, WM8994_FLL1_CONTROL_4, val);
-	bypass_write_hook = false;
-}
-#endif
 
 unsigned short mono_downmix_get_value(unsigned short val, bool can_reverse)
 {
@@ -1035,13 +887,6 @@ static ssize_t headphone_amplifier_level_store(struct device *dev,
 	}
 	return size;
 }
-#endif
-
-#ifdef NEXUS_S
-DECLARE_BOOL_SHOW(speaker_tuning);
-DECLARE_BOOL_STORE_UPDATE_WITH_MUTE(speaker_tuning,
-				    update_speaker_tuning,
-				    false);
 #endif
 
 #ifdef CONFIG_SND_VOODOO_FM
@@ -1425,12 +1270,6 @@ static DEVICE_ATTR(headphone_amplifier_level, S_IRUGO | S_IWUGO,
 		   headphone_amplifier_level_store);
 #endif
 
-#ifdef NEXUS_S
-static DEVICE_ATTR(speaker_tuning, S_IRUGO | S_IWUGO,
-		   speaker_tuning_show,
-		   speaker_tuning_store);
-#endif
-
 #ifdef CONFIG_SND_VOODOO_FM
 static DEVICE_ATTR(fm_radio_headset_restore_bass, S_IRUGO | S_IWUGO,
 		   fm_radio_headset_restore_bass_show,
@@ -1543,9 +1382,6 @@ static struct attribute *voodoo_sound_attributes[] = {
 	&dev_attr_debug_log.attr,
 #ifdef CONFIG_SND_VOODOO_HP_LEVEL_CONTROL
 	&dev_attr_headphone_amplifier_level.attr,
-#endif
-#ifdef NEXUS_S
-	&dev_attr_speaker_tuning.attr,
 #endif
 #ifdef CONFIG_SND_VOODOO_FM
 	&dev_attr_fm_radio_headset_restore_bass.attr,
@@ -1680,19 +1516,6 @@ void voodoo_hook_record_main_mic()
 }
 #endif
 
-#ifdef NEXUS_S
-void voodoo_hook_playback_speaker()
-{
-	// global kill switch
-	if (!enable)
-		return;
-	if (!speaker_tuning)
-		return;
-
-	update_speaker_tuning(false);
-}
-#endif
-
 unsigned int voodoo_hook_wm8994_write(struct snd_soc_codec *codec_,
 				      unsigned int reg, unsigned int value)
 {
@@ -1785,15 +1608,6 @@ unsigned int voodoo_hook_wm8994_write(struct snd_soc_codec *codec_,
 	if (debug_log(LOG_VERBOSE))
 	// log every write to dmesg
 		printk("Voodoo sound: wm8994_write 0x%03X 0x%04X "
-#ifdef NEXUS_S
-		       "codec_state=%u, stream_state=%u, "
-		       "cur_path=%i, rec_path=%i, "
-		       "power_state=%i\n",
-		       reg, value,
-		       wm8994->codec_state, wm8994->stream_state,
-		       wm8994->cur_path, wm8994->rec_path,
-		       wm8994->power_state);
-#else
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 		       "codec_state=%u, stream_state=%u, "
 		       "cur_path=%i, rec_path=%i, "
