@@ -476,26 +476,6 @@ bool is_path(int unified_path)
 	// headphones
 	case HEADPHONES:
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
-		return (wm8994->cur_path == HP
-			|| wm8994->cur_path == HP_NO_MIC);
-#else
-		return (wm8994->cur_path == HP);
-#endif
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
-		return (wm8994->cur_path == HP
-			|| wm8994->cur_path == HP_NO_MIC
-			|| wm8994->fmradio_path == FMR_HP);
-#else
-		return (wm8994->cur_path == HP
-			|| wm8994->fmradio_path == FMR_HP);
-#endif
-#endif
-
-
-
 bool is_path_media_or_fm_no_call_no_record()
 {
 
