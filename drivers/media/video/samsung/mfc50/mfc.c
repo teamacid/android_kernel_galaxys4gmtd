@@ -420,16 +420,14 @@ static long mfc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		break;
 
        case IOCTL_MFC_BUF_CACHE:
-/*
 		mutex_lock(&mfc_mutex);
 
 		in_param.ret_code = MFCINST_RET_OK;
 		mfc_ctx->buf_type = in_param.args.buf_type;
 
 		mutex_unlock(&mfc_mutex);
-*/
 		break;
-		
+	
 	default:
 		mfc_err("Requested ioctl command is not defined. (ioctl cmd=0x%08x)\n", cmd);
 		in_param.ret_code  = MFCINST_ERR_INVALID_PARAM;
@@ -475,7 +473,7 @@ static int mfc_mmap(struct file *filp, struct vm_area_struct *vma)
 		return -EINVAL;
 	}
 
-	mfc_ctx->port0_mmap_size = (vir_size / 2);
+	mfc_ctx->port0_mmap_size = mfc_port0_memsize - firmware_size;
 
 	vma->vm_flags |= VM_RESERVED | VM_IO;
 	if (mfc_ctx->buf_type != MFC_BUFFER_CACHE)

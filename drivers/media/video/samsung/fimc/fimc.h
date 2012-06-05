@@ -37,7 +37,7 @@
 #define FIMC_PHYBUFS		4
 #define FIMC_OUTBUFS		3
 #define FIMC_INQUEUES		10
-#define FIMC_MAX_CTXS		1
+#define FIMC_MAX_CTXS		2
 #define FIMC_TPID		3
 #define FIMC_CAPBUFS		16
 #define FIMC_ONESHOT_TIMEOUT	200
@@ -65,7 +65,10 @@
 #define FIMC_SCLK		1
 #define FIMC_OVLY_MODE FIMC_OVLY_DMA_AUTO
 
+#define PINGPONG_2ADDR_MODE
+#if defined(PINGPONG_2ADDR_MODE)
 #define FIMC_PINGPONG 2
+#endif
 
 /*
  * ENUMERATIONS
@@ -252,7 +255,6 @@ struct fimc_outinfo {
 	int			last_ctx;
 	spinlock_t		lock_in;
 	spinlock_t		lock_out;
-	struct mutex            lock_fimc_out; // added patch
 	struct fimc_idx		inq[FIMC_INQUEUES];
 	struct fimc_ctx		ctx[FIMC_MAX_CTXS];
 	struct fimc_ctx_idx	idxs;
