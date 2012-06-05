@@ -288,7 +288,7 @@ int s3c_mem_ioctl(struct inode *inode, struct file *file,
 			if (copy_from_user(&param, (void __user *)arg, sizeof(struct s3c_mem_dma_param)))
 				return -EFAULT;
 
-			dmac_map_area((param.src_addr)&PAGE_MASK, param.size, DMA_FROM_DEVICE);
+			dmac_map_area((void *)((param.src_addr)&PAGE_MASK), param.size, DMA_FROM_DEVICE);
 			//invalidate_kernel_vmap_range((void *)((param.src_addr)&PAGE_MASK), param.size);
 			return  0;
 		}
