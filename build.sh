@@ -7,6 +7,8 @@ then
     set -x
 fi
 
+export PATH=$PATH:${ANDROID_TOOLCHAIN}
+
 # Command line arguments
 command="${1}"
 opt_arg="${2}"
@@ -18,7 +20,7 @@ DEVICE=${DEVICE:-"galaxys4gmtd"}
 DEFCONFIG=${DEFCONFIG:-"cyanogen_${DEVICE}_defconfig"}
 SRC=${SRC:-"${ANDROID_BUILD_TOP}/kernel/${DEVICE}"}
 JOBS=${JOBS:-"$(grep ^process /proc/cpuinfo | wc -l)"}
-CROSSCC=${CROSSCC:-"${ANDROID_TOOLCHAIN}/arm-eabi-"}
+CROSSCC=${CROSSCC:-"arm-eabi-"}
 HOSTCC=${HOSTCC:-"$(which gcc)"}
 HOSTCXX=${HOSTCXX:-"$(which g++)"}
 EXTRA_CONFIG=${EXTRA_CONFIG:-""}
