@@ -213,17 +213,12 @@ static void s3c_csis_set_hs_settle(int settle)
 void s3c_csis_start(int lanes, int settle, int align, int width,
 		int height, int pixel_format)
 {
+	struct platform_device *pdev = to_platform_device(s3c_csis->dev);
 	struct s3c_platform_csis *pdata;
-
-	if (s3c_csis->initialized)
-		return;
-
-	printk(KERN_INFO "%s: width %d, height %d pixel format %d\n",
-			__func__, width, height, pixel_format);
 
 	pdata = to_csis_plat(s3c_csis->dev);
 	if (pdata->cfg_phy_global)
-		pdata->cfg_phy_global(1);
+		pdata->cfg_phy_global(pdev, 1);
 
 	s3c_csis_reset();
 	s3c_csis_set_nr_lanes(lanes);
@@ -245,29 +240,20 @@ void s3c_csis_start(int lanes, int settle, int align, int width,
 	s3c_csis_system_on();
 	s3c_csis_phy_on();
 
-	s3c_csis->initialized = 1;
-
 	info("Samsung MIPI-CSI2 operation started\n");
 }
 
-void s3c_csis_stop()
+static void s3c_csis_stop()
 {
 	struct s3c_platform_csis *plat;
-
-	if (!s3c_csis->initialized)
-		return;
-
-	printk(KERN_INFO "%s\n", __func__);
 
 	s3c_csis_disable_interrupt();
 	s3c_csis_system_off();
 	s3c_csis_phy_off();
 
-	plat = to_csis_plat(s3c_csis->dev);
+	plat = to_csis_plat(&pdev->dev);
 	if (plat->cfg_phy_global)
-		plat->cfg_phy_global(0);
-
-	s3c_csis->initialized = 0;
+		plat->cfg_phy_global(pdev, 0);
 }
 
 static irqreturn_t s3c_csis_irq(int irq, void *dev_id)
@@ -275,8 +261,7 @@ static irqreturn_t s3c_csis_irq(int irq, void *dev_id)
 	u32 cfg;
 
 	/* just clearing the pends */
-	cfg = readl(s3c_csis->regs + S3C_CSIS_INTSRC);
-	printk(KERN_ERR "MIPI IRQ : 0x%08x\n", cfg);//bestiq	
+	cfg = readl(s3c_csis->regs + S3C_CSIS_INTSRC);	
 	writel(cfg, s3c_csis->regs + S3C_CSIS_INTSRC);
 
 	return IRQ_HANDLED;
@@ -285,16 +270,30 @@ static irqreturn_t s3c_csis_irq(int irq, void *dev_id)
 static int s3c_csis_clk_on(struct platform_device *pdev)
 {
 	struct s3c_platform_csis *pdata;
+	struct clk *parent, *mout_csis;
 
 	pdata = to_csis_plat(&pdev->dev);
 
-	/* get csis IP clock(CLK_CSIS) */
-	s3c_csis->clock = clk_get(&pdev->dev, "csis");
-	if (IS_ERR(s3c_csis->clock)) {
-		err("failed to get csis ip clock\n");
+	/* mout_mpll */
+	parent = clk_get(&pdev->dev, pdata->srclk_name);
+	if (IS_ERR(parent)) {
+		err("failed to get parent clock for csis\n");
 		return -EINVAL;
 	}
 
+	/* mout_csis */
+	mout_csis = clk_get(&pdev->dev, "mout_csis");
+
+	/* sclk_csis */
+	s3c_csis->clock = clk_get(&pdev->dev, pdata->clk_name);
+	if (IS_ERR(s3c_csis->clock)) {
+		err("failed to get csis clock source\n");
+		return -EINVAL;
+	}
+
+    clk_set_parent(mout_csis, parent);
+	clk_set_parent(s3c_csis->clock, mout_csis);
+	
 	/* Turn on csis power domain regulator */
 	regulator_enable(s3c_csis->regulator);
 	/* clock enable for csis */
@@ -309,10 +308,10 @@ static int s3c_csis_clk_off(struct platform_device *pdev)
 
 	plat = to_csis_plat(&pdev->dev);
 
-	/* get csis IP clock(CLK_CSIS) */
-	s3c_csis->clock = clk_get(&pdev->dev, "csis");
+	/* sclk_csis */
+	s3c_csis->clock = clk_get(&pdev->dev, plat->clk_name);
 	if (IS_ERR(s3c_csis->clock)) {
-		err("failed to get csis ip clock\n");
+		err("failed to get csis clock source\n");
 		return -EINVAL;
 	}
 
@@ -327,8 +326,6 @@ static int s3c_csis_clk_off(struct platform_device *pdev)
 static int s3c_csis_probe(struct platform_device *pdev)
 {
 	struct s3c_platform_csis *pdata;
-	struct clk *sclk_csis = NULL;
-	struct clk *parent = NULL;
 	struct resource *res;
 
 	s3c_csis_set_info();
@@ -346,23 +343,6 @@ static int s3c_csis_probe(struct platform_device *pdev)
 				__func__, "s3c-csis");
 		return PTR_ERR(s3c_csis->regulator);
 	}
-
-	/* get parent clock for sclk_csis */
-	parent = clk_get(&pdev->dev, pdata->srclk_name);
-	if (IS_ERR(parent)) {
-	        err("failed to get parent clock for sclk_csis\n");
-	        return -EINVAL;
-	}
-
-	/* get special clock for mipi-csis */
-	sclk_csis = clk_get(&pdev->dev, pdata->clk_name);
-	if (IS_ERR(sclk_csis)) {
-	        err("failed to get sclk_csis(%s) clock source\n",
-	                pdata->clk_name);
-	        return -EINVAL;
-	}
-	clk_set_parent(sclk_csis, parent);
-	clk_enable(sclk_csis);
 
 	/* clock & power on */
 	s3c_csis_clk_on(pdev);
@@ -392,8 +372,6 @@ static int s3c_csis_probe(struct platform_device *pdev)
 	if (request_irq(s3c_csis->irq, s3c_csis_irq, IRQF_DISABLED, \
 		s3c_csis->name, s3c_csis))
 		err("request_irq failed\n");
-
-	s3c_csis->initialized = 0;
 
 	info("Samsung MIPI-CSI2 driver probed successfully\n");
 

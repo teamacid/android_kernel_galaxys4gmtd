@@ -418,8 +418,8 @@ static struct s3cfb_lcd s6e63m0 = {
 //#define  S5PV210_VIDEO_SAMSUNG_MEMSIZE_MFC0 (36864 * SZ_1K)
 //#define  S5PV210_VIDEO_SAMSUNG_MEMSIZE_MFC1 (36864 * SZ_1K)
 //#else
-#define  S5PV210_VIDEO_SAMSUNG_MEMSIZE_MFC0 (32768 * SZ_1K)
-#define  S5PV210_VIDEO_SAMSUNG_MEMSIZE_MFC1 (32768 * SZ_1K)
+#define  S5PV210_VIDEO_SAMSUNG_MEMSIZE_MFC0 (14336 * SZ_1K)
+#define  S5PV210_VIDEO_SAMSUNG_MEMSIZE_MFC1 (21504 * SZ_1K)
 //#endif
 #else    /* NTT - support playing 1080p */
 #define  S5PV210_VIDEO_SAMSUNG_MEMSIZE_MFC0 (36864 * SZ_1K)
@@ -5589,7 +5589,7 @@ static u8 t7_config[] = {GEN_POWERCONFIG_T7,
 static u8 t8_config[] = {GEN_ACQUISITIONCONFIG_T8,
 				7, 0, 5, 0, 0, 0, 9, 35};
 static u8 t9_config[] = {TOUCH_MULTITOUCHSCREEN_T9,
-				139, 0, 0, 19, 11, 0, 32, 25, 2, 1, 25, 3, 1,
+				139, 0, 0, 19, 11, 0, 32, 30, 2, 1, 0, 3, 1,
 				46, MXT224_MAX_MT_FINGERS, 5, 14, 10, 255, 3,
 				255, 3, 18, 18, 10, 10, 141, 65, 143, 110, 18};
 static u8 t18_config[] = {SPT_COMCONFIG_T18,
