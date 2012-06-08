@@ -57,11 +57,7 @@ ifeq ($(CONFIG_S5PC110_KEPLER_BOARD),y)
 snd-soc-wm8994-objs := wm8994_samsung.o wm8994_kepler.o A1026_i2c_drv.o audience.o
 else
 ifeq ($(CONFIG_S5PC110_VIBRANTPLUS_BOARD),y)
-ifeq ($(CONFIG_SND_VOODOO),y) 	
-snd-soc-wm8994-objs := wm8994_samsung.o wm8994_vibrantplus.o wm8994_voodoo.o
-else
 snd-soc-wm8994-objs := wm8994_samsung.o wm8994_vibrantplus.o 
-endif
 else
 ifeq ($(CONFIG_S5PC110_DEMPSEY_BOARD),y)
 snd-soc-wm8994-objs := wm8994_samsung.o wm8994_dempsey.o A1026_i2c_drv_dempsey.o audience.o
@@ -148,7 +144,3 @@ obj-$(CONFIG_SND_SOC_MAX9877)	+= snd-soc-max9877.o
 obj-$(CONFIG_SND_SOC_TPA6130A2)	+= snd-soc-tpa6130a2.o
 obj-$(CONFIG_SND_SOC_WM2000)	+= snd-soc-wm2000.o
 obj-$(CONFIG_SND_SOC_WM9090)	+= snd-soc-wm9090.o
-
-ifeq ($(CONFIG_SND_VOODOO_MODULE),m)
-obj-$(CONFIG_SND_VOODOO_MODULE)  += voodoo-sound-tegrak-module/
-endif
