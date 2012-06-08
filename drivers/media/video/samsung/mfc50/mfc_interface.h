@@ -38,7 +38,7 @@
 #define IOCTL_MFC_BUF_CACHE			0x00801000
 
 /* MFC H/W support maximum 32 extra DPB */
-#define MFC_MAX_EXTRA_DPB                      5
+#define MFC_MAX_EXTRA_DPB                      4
 
 #define ENC_PROFILE_LEVEL(profile, level)      ((profile) | ((level) << 8))
 
@@ -95,7 +95,7 @@ enum  ssbsip_mfc_dec_conf {
 	MFC_DEC_SETCONF_FRAME_TAG,
 	MFC_DEC_GETCONF_CRC_DATA,
 	MFC_DEC_GETCONF_BUF_WIDTH_HEIGHT,
-	FC_DEC_GETCONF_CROP_INFO,
+	MFC_DEC_GETCONF_CROP_INFO,
 	MFC_DEC_GETCONF_FRAME_TAG
 };
 
