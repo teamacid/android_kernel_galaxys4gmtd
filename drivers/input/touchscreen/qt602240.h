@@ -5275,7 +5275,7 @@ typedef struct
 } report_finger_info_t;
 
 //#define MAX_NUM_FINGER	10		// Maximum possible fingering
-#define MAX_USING_FINGER_NUM	5
+#define MAX_USING_FINGER_NUM	10
 #endif
 
   /* Each client has this additional data */
